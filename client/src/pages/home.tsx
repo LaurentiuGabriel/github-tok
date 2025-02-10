@@ -24,6 +24,7 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
           GitHub Repo Discovery
         </h1>
+        <h3 className="text-xl font-bold text-center mb-1 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">Built by <a href="https://laurentiu-raducu.com/">Laurentiu Raducu</a></h3>
         
         <InfiniteScroll
           onLoadMore={() => refetch()}

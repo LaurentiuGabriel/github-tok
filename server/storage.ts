@@ -25,15 +25,17 @@ export class MemStorage implements IStorage {
       .filter(repo => !this.isStale(repo.cachedAt));
     
     if (validRepos.length < count) {
-      // Not enough repos in cache, fetch from GitHub
-      const newRepos = await this.fetchFromGitHub(count * 2); // Fetch extra to have variety
-      for (const repo of newRepos) {
+      const newRepos = await this.fetchFromGitHub(count * 2);
+      // Filter out already cached repos before adding
+      const uniqueNewRepos = newRepos.filter(repo => 
+        !this.repos.has(repo.id)
+      );
+      for (const repo of uniqueNewRepos) {
         await this.cacheRepo(repo);
       }
-      return this.getRandomRepos(count); // Retry with newly cached repos
+      return this.getRandomRepos(count);
     }
 
-    // Randomly select repos
     return validRepos
       .sort(() => Math.random() - 0.5)
       .slice(0, count)
@@ -53,15 +55,14 @@ export class MemStorage implements IStorage {
       owner: githubRepo.owner,
       cachedAt: Date.now()
     };
-
-    this.repos.set(repo.id, repo);
+    this.repos.set(githubRepo.id, repo);
     return repo;
   }
 
   private async fetchFromGitHub(count: number): Promise<GitHubRepo[]> {
     try {
       const response = await axios.get(
-        `https://api.github.com/search/repositories?q=stars:>100&sort=stars&order=desc&per_page=${count}&page=${Math.floor(Math.random() * 10)}`
+        `https://api.github.com/search/repositories?q=stars:>100&per_page=${count}&page=${Math.floor(Math.random() * 10)}`
       );
       return response.data.items;
     } catch (error) {
